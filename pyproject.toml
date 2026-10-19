@@ -1,0 +1,28 @@
+[project]
+name = "miljoe-data"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "viktorbilde-debug", email = "viktor.bilde@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "coverage>=7.16.2",
+    "psycopg>=3.3.6",
+    "psycopg-binary>=3.3.6",
+    "requests>=2.34.2",
+]
+
+[project.scripts]
+miljoe-data = "miljoe_data:main"
+
+[build-system]
+requires = ["uv_build>=0.12.16,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.coverage.run]
+omit = [
+    # omit this single file
+    "test.py",
+    ]
