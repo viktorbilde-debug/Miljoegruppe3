@@ -7,5 +7,3 @@ if __name__ == '__main__':
     etl.load_humidity(transformed_data)
     etl.load_temp_dry(transformed_data)
     etl.load_pressure(transformed_data)
-
-

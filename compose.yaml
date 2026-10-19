@@ -22,4 +22,3 @@ services:
       test: ["CMD", "pg_isready", "-U", "app", "-d", "data_db"]
       interval: 5s
       retries: 5
-
