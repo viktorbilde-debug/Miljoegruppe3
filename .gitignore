@@ -431,5 +431,8 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
 #For UV
 .venv/
+
+#Secrets

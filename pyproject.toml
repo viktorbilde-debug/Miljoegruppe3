@@ -27,3 +27,4 @@ omit = [
     # omit this single file
     "test.py",
     ]
+
