@@ -7,6 +7,8 @@ conn = psycopg.connect(
 cursor = conn.cursor()
 
 cursor.execute("SELECT * FROM humidity")
+result = cursor.fetchall()
+
 #conn.commit()
 #cursor.close()
 #conn.close()
