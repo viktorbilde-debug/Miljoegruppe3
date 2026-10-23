@@ -15,8 +15,10 @@ result = cursor.fetchall()
 app = FastAPI()
 
 
-@app.get("/humidity")
-def read_user_me():
+@app.get("/humidity/")
+def read_user_me(q: str | None = None):
+    if q:
+        result.append("hejfraMinna")
     return result
 
-print(result)
+#Check at det virker på fx http://127.0.0.1:8000/humidity/?q=4
