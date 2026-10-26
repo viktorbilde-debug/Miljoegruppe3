@@ -21,8 +21,6 @@ def extract_from_dmi(datetime:str, limit:int, offset:int, bbox:str = "7,54,16,58
     extracted_data = response.json()
     return extracted_data
 
-# temp_datetime = "2018-02-12T01:00:00Z/2018-02-12T01:00:00Z"
-# extract_from_dmi(temp_datetime,100,0)
 
 #tilføj tjek for om indhentet data er korrekt
 def transform(extracted_data):
@@ -117,6 +115,24 @@ def load_pressure(transformed_data):
     close_connection(cursor, conn)
     return
 
+def open_connection_local_DB():
+    conn = psycopg.connect(
+        "postgresql://app:test@localhost:5432/data_db"
+    )
+    return conn
+
+def return_humidity_local_DB(table_name: str,num_obs:int):
+    conn = open_connection_local_DB()
+    cursor = conn.cursor()
+    return_query = f"""
+                   SELECT * 
+                   FROM {table_name}
+                   LIMIT {num_obs}
+                   """
+    cursor.execute(return_query)
+    result = cursor.fetchall()
+    close_connection(cursor,conn)
+    return result
 
 #### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
 ### Det er farligt at skrive {key} ind i string da folk kan give en key som er database down

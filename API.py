@@ -1,32 +1,21 @@
 from fastapi import FastAPI
 import psycopg
-
-
-conn = psycopg.connect(
-        "postgresql://app:test@localhost:5432/data_db"
-    )
-
-cursor = conn.cursor()
-
-cursor.execute("SELECT * FROM humidity")
-result = cursor.fetchall()
-
-#cursor.execute("SELECT * FROM temp_dry")
-
-#cursor.close()
-#conn.close()
+from etl import return_humidity_local_DB
 
 app = FastAPI()
 
-#@app.lifespan("startup")
-
-#def on_startup():
-    #create_db_and_tables()
-
 @app.get("/humidity")
 def read_user_me():
-    return result
-    #cursor = conn.cursor()
+    return return_humidity_local_DB("humidity",4)
+
+@app.get("/temp_dry")
+def read_user_me():
+    return return_humidity_local_DB("temp_dry",4)
+
+@app.get("/pressure")
+def read_user_me():
+    return return_humidity_local_DB("pressure",4)
+
 
 #cursor.execute("SELECT * FROM humidity")
 #result = cursor.fetchall()
