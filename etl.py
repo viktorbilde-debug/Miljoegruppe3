@@ -121,7 +121,11 @@ def open_connection_local_DB():
     )
     return conn
 
-def return_humidity_local_DB(table_name: str,num_obs:int):
+def return_local_DB(table_name: str,num_obs:int):
+    if table_name not in ["humidity", "temp_dry", "pressure"]:
+        return "Not valid table name"
+    if num_obs<0:
+        return "Not valid number of observations"
     conn = open_connection_local_DB()
     cursor = conn.cursor()
     return_query = f"""
@@ -133,6 +137,8 @@ def return_humidity_local_DB(table_name: str,num_obs:int):
     result = cursor.fetchall()
     close_connection(cursor,conn)
     return result
+
+
 
 #### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
 ### Det er farligt at skrive {key} ind i string da folk kan give en key som er database down

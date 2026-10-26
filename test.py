@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
-from etl import transform, extract_from_dmi, open_connection, load_humidity, load_pressure, load_temp_dry, close_connection
+from etl import transform, extract_from_dmi, open_connection, load_humidity, load_pressure, load_temp_dry, close_connection, open_connection_local_DB, return_local_DB
 
 
 class TestTransformer(unittest.TestCase):
@@ -382,8 +382,46 @@ class TestLoad(unittest.TestCase):
             mock_cursor.close.assert_called_once()
             mock_conn.close.assert_called_once()
 
+class Testextract_Vores_API(unittest.TestCase):
+    @patch("etl.psycopg.connect")
+    def test_open_connection(self, mock_connect): #tester
+    
+        mock_connection = Mock()
+        mock_connect.return_value = mock_connection #mock_connect return value skal være lig mock_connection
+        result = open_connection_local_DB()
+    
+        mock_connect.assert_called_once_with(
+            "postgresql://app:test@localhost:5432/data_db") #kotrollerer at mock connect kaldes en gang med den definerede streng
+    
+        self.assertEqual(result, mock_connection) #kontrollerer at open_connection returnerer det samme objekt som mock_connectiong
+    
+    @patch("etl.open_connection_local_DB")
+    def test_runs_correct_SQL_commands_and_connects(self, mock_open_connection):
+            mock_conn = Mock()
+            mock_cursor = Mock()
+            mock_open_connection.return_value = mock_conn
+            mock_conn.cursor.return_value = mock_cursor
+            return_local_DB("humidity",4)
+            mock_cursor.execute.assert_called_once()
 
+            self.assertEqual(mock_cursor.execute.call_args.args[0],
+                            '\n                   SELECT * \n                   FROM humidity\n                   LIMIT 4\n                   ')
+            mock_cursor.fetchall.assert_called_once()
+            mock_cursor.close.assert_called_once()
+            mock_conn.close.assert_called_once()
 
+    def test_returns_error_wrong_table_input(self): 
+        function = return_local_DB("hey",1)
+        expected = "Not valid table name"
+        self.assertEqual(function, expected)
+        return
+    
+    def test_returns_error_negtaive_obs_input(self): 
+            function = return_local_DB("humidity",-1)
+            expected = "Not valid number of observations"
+            self.assertEqual(function, expected)
+            return
+    
 #Mangler at teste:
 
 
