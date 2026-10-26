@@ -137,7 +137,7 @@ def return_humidity_local_DB(table_name: str,num_obs:int):
 def extract_from_specialisterne():
     url = "https://herodot.spac.dk/observations/list"
 
-    response = requests.get(url,auth=('viktor.bilde@specialisterne.dk', '##'))
+    response = requests.get(url,auth=('viktor.bilde@specialisterne.dk', ''))
     if not response.ok:  ### Returns false if response error is 400+
         return "Failed API response"
     extracted_data = response.json()
