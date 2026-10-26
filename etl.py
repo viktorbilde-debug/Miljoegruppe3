@@ -21,8 +21,6 @@ def extract_from_dmi(datetime:str, limit:int, offset:int, bbox:str = "7,54,16,58
     extracted_data = response.json()
     return extracted_data
 
-# temp_datetime = "2018-02-12T01:00:00Z/2018-02-12T01:00:00Z"
-# extract_from_dmi(temp_datetime,100,0)
 
 #tilføj tjek for om indhentet data er korrekt
 def transform(extracted_data):
