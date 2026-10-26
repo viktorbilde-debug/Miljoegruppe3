@@ -1,19 +1,6 @@
 from fastapi import FastAPI
 import psycopg
-from etl import open_connection_local_DB, close_connection
-
-def return_humidity_local_DB(table_name: str,num_obs:int):
-    conn = open_connection_local_DB()
-    cursor = conn.cursor()
-    return_query = f"""
-                   SELECT * 
-                   FROM {table_name}
-                   LIMIT {num_obs}
-                   """
-    cursor.execute(return_query)
-    result = cursor.fetchall()
-    close_connection(cursor,conn)
-    return result
+from etl import open_connection_local_DB, close_connection, return_humidity_local_DB
 
 app = FastAPI()
 
