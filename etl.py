@@ -134,6 +134,15 @@ def return_humidity_local_DB(table_name: str,num_obs:int):
     close_connection(cursor,conn)
     return result
 
+def extract_from_specialisterne():
+    url = "https://herodot.spac.dk/observations/list"
+
+    response = requests.get(url,auth=('viktor.bilde@specialisterne.dk', '##'))
+    if not response.ok:  ### Returns false if response error is 400+
+        return "Failed API response"
+    extracted_data = response.json()
+    return extracted_data
+print(extract_from_specialisterne())
 #### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
 ### Det er farligt at skrive {key} ind i string da folk kan give en key som er database down
 ### Tag nogle enkelt og hardcode det
