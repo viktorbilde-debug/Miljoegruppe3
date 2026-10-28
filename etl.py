@@ -137,6 +137,28 @@ def return_local_DB(table_name: str,num_obs:int):
     result = cursor.fetchall()
     close_connection(cursor,conn)
     return result
+"""
+#def extract_from_specialisterne():
+    url = "https://herodot.spac.dk/observations/list"
+
+    response = requests.get(url,auth=('viktor.bilde@specialisterne.dk', ''))
+    if not response.ok:  ### Returns false if response error is 400+
+        return "Failed API response"
+    extracted_data = response.json()
+    return extracted_data
+print(extract_from_specialisterne())
+"""
+
+
+url = "https://herodot.spac.dk/api/v1/observations"
+
+headers = {
+    "Authorization": "Bearer 3e150494-280d-425d-ac28-c5dcf41c29ba:_-hVIiGyvYla_0SjAhTKX1LDn3UgdhWZ5gnozv31zMU"
+}
+
+response = requests.get(url, headers=headers)
+
+print(response.json())
 
 
 
