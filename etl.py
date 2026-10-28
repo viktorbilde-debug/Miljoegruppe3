@@ -54,8 +54,8 @@ def transform(extracted_data):
 
     return transformed_data
 
-temp_datetime = "2018-02-12T01:00:00Z/2018-02-12T01:00:00Z"
-print(transform(extract_from_dmi(temp_datetime,400000,0)))
+#temp_datetime = "2018-02-12T01:00:00Z/2018-02-12T01:00:00Z"
+#print(transform(extract_from_dmi(temp_datetime,4,0)))
 
 # print(transform(extract_from_dmi(temp_datetime,2,0 )))
 # print(list(transform(extract_from_dmi()).keys()))
@@ -76,8 +76,8 @@ def load_humidity(transformed_data):
     cursor = conn.cursor()
     data = transformed_data['humidity']
     insert_query = """
-                   INSERT INTO humidity(station_id, observed_time, percent_humidity)
-                   VALUES(%s, %s, %s);
+                   INSERT INTO humidity(source,station_id, observed_time, percent_humidity)
+                   VALUES(%s ,%s, %s, %s);
                    """
 
     cursor.executemany(insert_query,data)
@@ -92,8 +92,8 @@ def load_temp_dry(transformed_data):
     cursor = conn.cursor()
     data = transformed_data['temp_dry']
     insert_query = """
-                   INSERT INTO temp_dry(station_id, observed_time, temperature)
-                   VALUES (%s, %s, %s);
+                   INSERT INTO temp_dry(source,station_id, observed_time, temperature)
+                   VALUES (%s ,%s, %s, %s);
                    """
 
     cursor.executemany(insert_query, data)
@@ -106,8 +106,8 @@ def load_pressure(transformed_data):
     cursor = conn.cursor()
     data = transformed_data['pressure']
     insert_query = """
-                   INSERT INTO pressure(station_id, observed_time, mbar)
-                   VALUES (%s, %s, %s);
+                   INSERT INTO pressure(source,station_id, observed_time, mbar)
+                   VALUES (%s ,%s, %s, %s);
                    """
 
     cursor.executemany(insert_query, data)
@@ -137,29 +137,25 @@ def return_local_DB(table_name: str,num_obs:int):
     result = cursor.fetchall()
     close_connection(cursor,conn)
     return result
-"""
-#def extract_from_specialisterne():
-    url = "https://herodot.spac.dk/observations/list"
 
-    response = requests.get(url,auth=('viktor.bilde@specialisterne.dk', ''))
+def extract_from_specialisterne_API(datetime:str, limit:int, offset:int):
+    url = "https://herodot.spac.dk/api/v1/observations"
+    API_parameters = {
+            "datetime": datetime,
+            "limit": limit,
+            "offset": offset
+        }
+      
+    headers = {
+    "Authorization": "Bearer 3e150494-280d-425d-ac28-c5dcf41c29ba:_-hVIiGyvYla_0SjAhTKX1LDn3UgdhWZ5gnozv31zMU"
+    }
+    response = requests.get(url, params=API_parameters, headers=headers)
     if not response.ok:  ### Returns false if response error is 400+
         return "Failed API response"
     extracted_data = response.json()
     return extracted_data
-print(extract_from_specialisterne())
-"""
 
-
-url = "https://herodot.spac.dk/api/v1/observations"
-
-headers = {
-    "Authorization": "Bearer 3e150494-280d-425d-ac28-c5dcf41c29ba:_-hVIiGyvYla_0SjAhTKX1LDn3UgdhWZ5gnozv31zMU"
-}
-
-response = requests.get(url, headers=headers)
-
-print(response.json())
-
+print(extract_from_specialisterne_API("2026-10-28T09:25:51.634576Z",1,0))
 
 
 #### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)

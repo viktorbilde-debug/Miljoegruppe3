@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
-from etl import transform, extract_from_dmi, open_connection, load_humidity, load_pressure, load_temp_dry, close_connection, open_connection_local_DB, return_local_DB
+from etl import transform, extract_from_dmi, open_connection, load_humidity, load_pressure, load_temp_dry, close_connection, open_connection_local_DB, return_local_DB, extract_from_specialisterne_API
 
 
 class TestTransformer(unittest.TestCase):
@@ -421,7 +421,33 @@ class Testextract_Vores_API(unittest.TestCase):
             expected = "Not valid number of observations"
             self.assertEqual(function, expected)
             return
-    
+
+class Testextract_Vores_API(unittest.TestCase):
+    @patch("etl.requests.get") #erstatter request.get med en mock
+    def test_extract_from_specialisterne_API(self, mock_get): #testen kontrollerer at det forventede json data returneres
+        mock_get.return_value.ok = True #simulerer vellykket api kald
+        mock_get.return_value.json.return_value = {'observations': 
+                                                   [{'observationId': '401c3ce6-c7fd-46b0-a9c2-afeb773317a6', 
+                                                     'nodeId': '2c47284d-777b-44f0-bdeb-3d442f6a31b1', 
+                                                     'instrumentId': 'SCD41:9141BD073B1E', 
+                                                     'instrumentModel': 'SCD41', 
+                                                     'sensor': 'co2_concentration', 
+                                                     'readingId': 'eb29db68-fb62-4ef7-afd0-b46091e24706', 
+                                                     'value': 547.0, 
+                                                     'timestamp': '2026-10-28T09:29:24.998486Z'}]}
+
+        result = extract_from_specialisterne_API("2026-10-28T09:25:51.634576Z",1,0)
+
+       
+        self.assertEqual(result, mock_get.return_value.json()) #Tjekker værdi af en observation
+        #mock_get.assert_called_once_with(
+                    #"https://herodot.spac.dk/api/v1/observations?datetime=2026-10-28T09:25:51.634576Z&limit=1&offset=0&header={
+    #"Authorization": "Bearer 3e150494-280d-425d-ac28-c5dcf41c29ba:_-hVIiGyvYla_0SjAhTKX1LDn3UgdhWZ5gnozv31zMU"}")
+        return
+
+
+
+
 #Mangler at teste:
 
 
