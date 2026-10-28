@@ -133,8 +133,8 @@ def return_humidity_local_DB(table_name: str,num_obs:int):
     result = cursor.fetchall()
     close_connection(cursor,conn)
     return result
-
-def extract_from_specialisterne():
+"""
+#def extract_from_specialisterne():
     url = "https://herodot.spac.dk/observations/list"
 
     response = requests.get(url,auth=('viktor.bilde@specialisterne.dk', ''))
@@ -143,6 +143,19 @@ def extract_from_specialisterne():
     extracted_data = response.json()
     return extracted_data
 print(extract_from_specialisterne())
+"""
+
+
+url = "https://herodot.spac.dk/api/v1/observations"
+
+headers = {
+    "Authorization": "Bearer 3e150494-280d-425d-ac28-c5dcf41c29ba:_-hVIiGyvYla_0SjAhTKX1LDn3UgdhWZ5gnozv31zMU"
+}
+
+response = requests.get(url, headers=headers)
+
+print(response.json())
+
 #### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
 ### Det er farligt at skrive {key} ind i string da folk kan give en key som er database down
 ### Tag nogle enkelt og hardcode det
