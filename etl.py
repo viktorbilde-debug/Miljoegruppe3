@@ -154,8 +154,42 @@ def extract_from_specialisterne_API(datetime:str, limit:int, offset:int):
         return "Failed API response"
     extracted_data = response.json()
     return extracted_data
-
+#Exempel datetime=2026-10-28T09:25:51.634576Z, limit=1, offset=0
 print(extract_from_specialisterne_API("2026-10-28T09:25:51.634576Z",1,0))
+
+
+def transform_S_API_Data(extracted_data):
+    if extracted_data == {}:
+        return "This is an empty dictionary"
+
+    if extracted_data == "Failed API response":
+        return "Failed API response"
+
+    if "observations" not in extracted_data.keys():
+        return "Called data from wrong API, try looking at \n https://herodot.spac.dk/login"
+    data = extracted_data['observations'] ### Det er lidt underligt at ændre navnet her, skal vi gøre det i toppen eller lade helt være?
+    transformed_data = {}
+
+    for i in data:
+        parameter_id = data_in['parameterId']
+        station_id = data_in['stationId']
+        date_and_time =data_in['observed']
+        value =data_in['value']
+
+        ### skal vi tjekke med is none eller en tom string? eller noget andet?
+        if not parameter_id or not station_id or not date_and_time or (not value and value != 0):
+            return "BITCHES"
+
+        if parameter_id not in transformed_data.keys():
+            transformed_data[parameter_id] = []
+            transformed_data[parameter_id].append([station_id, date_and_time, value])
+        else:
+            transformed_data[parameter_id].append([station_id, date_and_time, value])
+
+    return transformed_data
+
+
+
 
 
 #### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
