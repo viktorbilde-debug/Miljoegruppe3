@@ -170,6 +170,8 @@ def transform_S_API_Data(extracted_data):
     for i in data:
         source="Specialisterne"
         parameter_id = i['sensor']
+        if parameter_id=="temperature":
+            parameter_id="temp_dry"
         station_id = i['nodeId']
         date_and_time =i['timestamp']
         value =i['value']
@@ -186,9 +188,10 @@ def transform_S_API_Data(extracted_data):
 
     return transformed_data
 
-data=transform_S_API_Data(extract_from_specialisterne_API("2026-10-28 14:48:29.281465 UTC/2026-10-28 14:48:36.483821 UTC",10,0))
-print(data['humidity'])
-
+extracted_data_S_API=extract_from_specialisterne_API("2026-10-28 14:48:29.281465 UTC/2026-10-28 14:48:36.483821 UTC",100,0)
+data_transformed=transform_S_API_Data(extracted_data_S_API)
+print(data_transformed.keys())
+print(data_transformed)
 #### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
 ### Det er farligt at skrive {key} ind i string da folk kan give en key som er database down
 ### Tag nogle enkelt og hardcode det
