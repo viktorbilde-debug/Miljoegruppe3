@@ -302,8 +302,8 @@ class TestLoad(unittest.TestCase):
 
         mock_transformed_data = {
             "humidity": [
-                ["06124", "2018-03-18T12:30:00Z", 50, ],
-                ["06126", "2018-03-18T12:30:00Z", 70, ],
+                ["DMI","06124", "2018-03-18T12:30:00Z", 50, ],
+                ["DMI","06126", "2018-03-18T12:30:00Z", 70, ],
 
             ]
                 }
@@ -318,8 +318,8 @@ class TestLoad(unittest.TestCase):
 
         self.assertEqual(mock_cursor.executemany.call_args.args[0],
                          """
-                   INSERT INTO humidity(station_id, observed_time, percent_humidity)
-                   VALUES(%s, %s, %s);
+                   INSERT INTO humidity(source,station_id, observed_time, percent_humidity)
+                   VALUES(%s ,%s, %s, %s);
                    """) #Antallet af mellemrum er vigtigt, do not touch!!
 
 
