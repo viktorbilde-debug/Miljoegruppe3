@@ -126,9 +126,9 @@ def return_local_DB(table_name: str,num_obs:int, source: str):
     conn = open_connection_local_DB()
     cursor = conn.cursor()
     return_query = f"""
-                   SELECT * 
+                   SELECT *
                    FROM {table_name}
-                   WHERE source = {source}
+                   WHERE source = '{source}'
                    LIMIT {num_obs}
                    """
     cursor.execute(return_query)

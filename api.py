@@ -20,10 +20,10 @@ def read_user_me(table_name: str | None = None, num_obs: int | None = None, sour
     if num_obs is None or num_obs < 1:
         return "Choose tablename and number of observations. Example: http://127.0.0.1:8000/?table_name=humidity&num_obs=1"
 
-    if source not in ("dmi", "specialisterne"):
+    if source not in ("DMI", "Specialisterne"):
         return "Choose tablename and number of observations. Example: http://127.0.0.1:8000/?table_name=humidity&num_obs=1"
 
-    result = return_local_DB(table_name, num_obs) #sæt source på
+    result = return_local_DB(table_name, num_obs, source) #sæt source på
 
     return result
 
