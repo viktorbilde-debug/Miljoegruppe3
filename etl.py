@@ -118,7 +118,7 @@ def open_connection_local_DB():
     )
     return conn
 
-def return_local_DB(table_name: str,num_obs:int):
+def return_local_DB(table_name: str,num_obs:int, source: str):
     if table_name not in ["humidity", "temp_dry", "pressure"]:
         return "Not valid table name"
     if num_obs<0:
@@ -128,6 +128,7 @@ def return_local_DB(table_name: str,num_obs:int):
     return_query = f"""
                    SELECT * 
                    FROM {table_name}
+                   WHERE source = {source}
                    LIMIT {num_obs}
                    """
     cursor.execute(return_query)
