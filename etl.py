@@ -155,40 +155,78 @@ def extract_from_specialisterne_API(datetime:str, limit:int, offset:int):
 #print(extract_from_specialisterne_API("2026-10-28 14:48:29.281465 UTC/2026-10-28 14:48:36.483821 UTC",10,0))
 
 
-def transform_S_API_Data(extracted_data):
-    if extracted_data == {}:
+# def transform_S_API_Data(extracted_data):
+#     if extracted_data == {}:
+#         return "This is an empty dictionary"
+
+#     if extracted_data == "Failed API response":
+#         return "Failed API response"
+
+#     if "observations" not in extracted_data.keys():
+#         return "Called data from wrong API, try looking at \n https://herodot.spac.dk/login"
+#     data = extracted_data['observations'] ### Det er lidt underligt at ændre navnet her, skal vi gøre det i toppen eller lade helt være?
+#     transformed_data = {}
+
+#     for i in data:
+#         source="Specialisterne"
+#         parameter_id = i['sensor']
+#         if parameter_id=="temperature":
+#             parameter_id="temp_dry"
+#         station_id = i['nodeId']
+#         date_and_time =i['timestamp']
+#         value =i['value']
+
+#         ### skal vi tjekke med is none eller en tom string? eller noget andet?
+#         if not parameter_id or not station_id or not date_and_time or (not value and value != 0):
+#             continue
+
+#         if parameter_id not in transformed_data.keys():
+#             transformed_data[parameter_id] = []
+#             transformed_data[parameter_id].append([source,station_id, date_and_time, value])
+#         else:
+#             transformed_data[parameter_id].append([source,station_id, date_and_time, value])
+
+#     return transformed_data
+
+def transform_specialisterne(extracted_data_specialisterne):
+    if extracted_data_specialisterne == {}:
         return "This is an empty dictionary"
 
-    if extracted_data == "Failed API response":
+    if extracted_data_specialisterne == "Failed API response":
         return "Failed API response"
 
-    if "observations" not in extracted_data.keys():
-        return "Called data from wrong API, try looking at \n https://herodot.spac.dk/login"
-    data = extracted_data['observations'] ### Det er lidt underligt at ændre navnet her, skal vi gøre det i toppen eller lade helt være?
-    transformed_data = {}
+    if "observations" not in extracted_data_specialisterne.keys():
+        #Lav bedre fejlmeddelse/er det overhovedet et realistisk scenarie
+        return "Noget er gået galt, ups "
+    
+    observationer = extracted_data_specialisterne["observations"]
 
-    for i in data:
-        source="Specialisterne"
-        parameter_id = i['sensor']
-        if parameter_id=="temperature":
-            parameter_id="temp_dry"
-        station_id = i['nodeId']
-        date_and_time =i['timestamp']
-        value =i['value']
+    transformed_data_specialisterne = {}
 
-        ### skal vi tjekke med is none eller en tom string? eller noget andet?
-        if not parameter_id or not station_id or not date_and_time or (not value and value != 0):
-            continue
+    for i in observationer:
+            source = "Specialisterne"
+            parameter_id = i['sensor']
+            instrument_model= i['instrumentModel']
+            location_id = i['nodeId']
+            date_and_time =i['timestamp']
+            value =i['value']
 
-        if parameter_id not in transformed_data.keys():
-            transformed_data[parameter_id] = []
-            transformed_data[parameter_id].append([source,station_id, date_and_time, value])
-        else:
-            transformed_data[parameter_id].append([source,station_id, date_and_time, value])
+            if not location_id or not date_and_time or not (parameter_id or instrument_model) or (not value and value != 0):
+                #Skal vi gøre noget med de ugyldige målinger?/logge dem et sted?
+                continue
 
-    return transformed_data
+            if not parameter_id and (instrument_model == 'DS18B20'):
+                            parameter_id = 'temperature'
+            elif not parameter_id:
+                continue
 
+            if parameter_id not in transformed_data_specialisterne.keys():
+                transformed_data_specialisterne[parameter_id] = []
+                transformed_data_specialisterne[parameter_id].append([source, location_id, date_and_time, value])
+            else:
+                transformed_data_specialisterne[parameter_id].append([source, location_id, date_and_time, value])
 
+    return transformed_data_specialisterne
 
 
 #### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
