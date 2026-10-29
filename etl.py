@@ -21,7 +21,6 @@ def extract_from_dmi(datetime:str, limit:int, offset:int, bbox:str = "7,54,16,58
     extracted_data = response.json()
     return extracted_data
 
-
 #tilføj tjek for om indhentet data er korrekt
 def transform(extracted_data):
     if extracted_data == {}:
@@ -36,6 +35,7 @@ def transform(extracted_data):
     transformed_data = {}
 
     for i in data:
+        source="DMI"
         data_in=i["properties"]
         parameter_id = data_in['parameterId']
         station_id = data_in['stationId']
@@ -48,18 +48,15 @@ def transform(extracted_data):
 
         if parameter_id not in transformed_data.keys():
             transformed_data[parameter_id] = []
-            transformed_data[parameter_id].append([station_id, date_and_time, value])
+            transformed_data[parameter_id].append([source,station_id, date_and_time, value])
         else:
-            transformed_data[parameter_id].append([station_id, date_and_time, value])
+            transformed_data[parameter_id].append([source,station_id, date_and_time, value])
 
     return transformed_data
 
 #temp_datetime = "2018-02-12T01:00:00Z/2018-02-12T01:00:00Z"
-#print(transform(extract_from_dmi(temp_datetime,4,0)))
-
-# print(transform(extract_from_dmi(temp_datetime,2,0 )))
-# print(list(transform(extract_from_dmi()).keys()))
-
+data1=transform(extract_from_dmi("2018-02-12T01:00:00Z/2018-02-12T01:00:00Z",100,0))
+print(data1['humidity'])
 def open_connection():
     conn = psycopg.connect(
         "postgresql://app:test@db:5432/data_db"
@@ -76,7 +73,7 @@ def load_humidity(transformed_data):
     cursor = conn.cursor()
     data = transformed_data['humidity']
     insert_query = """
-                   INSERT INTO humidity(source,station_id, observed_time, percent_humidity)
+                   INSERT INTO humidity(source, station_id, observed_time, percent_humidity)
                    VALUES(%s ,%s, %s, %s);
                    """
 
@@ -93,7 +90,7 @@ def load_temp_dry(transformed_data):
     data = transformed_data['temp_dry']
     insert_query = """
                    INSERT INTO temp_dry(source,station_id, observed_time, temperature)
-                   VALUES (%s ,%s, %s, %s);
+                   VALUES (%s, %s, %s, %s);
                    """
 
     cursor.executemany(insert_query, data)
@@ -107,7 +104,7 @@ def load_pressure(transformed_data):
     data = transformed_data['pressure']
     insert_query = """
                    INSERT INTO pressure(source,station_id, observed_time, mbar)
-                   VALUES (%s ,%s, %s, %s);
+                   VALUES (%s, %s, %s, %s);
                    """
 
     cursor.executemany(insert_query, data)
@@ -155,7 +152,7 @@ def extract_from_specialisterne_API(datetime:str, limit:int, offset:int):
     extracted_data = response.json()
     return extracted_data
 #Exempel datetime=2026-10-28T09:25:51.634576Z, limit=1, offset=0
-print(extract_from_specialisterne_API("2026-10-28T09:25:51.634576Z",1,0))
+#print(extract_from_specialisterne_API("2026-10-28 14:48:29.281465 UTC/2026-10-28 14:48:36.483821 UTC",10,0))
 
 
 def transform_S_API_Data(extracted_data):
@@ -171,26 +168,26 @@ def transform_S_API_Data(extracted_data):
     transformed_data = {}
 
     for i in data:
-        parameter_id = data_in['parameterId']
-        station_id = data_in['stationId']
-        date_and_time =data_in['observed']
-        value =data_in['value']
+        source="Specialisterne"
+        parameter_id = i['sensor']
+        station_id = i['nodeId']
+        date_and_time =i['timestamp']
+        value =i['value']
 
         ### skal vi tjekke med is none eller en tom string? eller noget andet?
         if not parameter_id or not station_id or not date_and_time or (not value and value != 0):
-            return "BITCHES"
+            continue
 
         if parameter_id not in transformed_data.keys():
             transformed_data[parameter_id] = []
-            transformed_data[parameter_id].append([station_id, date_and_time, value])
+            transformed_data[parameter_id].append([source,station_id, date_and_time, value])
         else:
-            transformed_data[parameter_id].append([station_id, date_and_time, value])
+            transformed_data[parameter_id].append([source,station_id, date_and_time, value])
 
     return transformed_data
 
-
-
-
+data=transform_S_API_Data(extract_from_specialisterne_API("2026-10-28 14:48:29.281465 UTC/2026-10-28 14:48:36.483821 UTC",10,0))
+print(data['humidity'])
 
 #### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
 ### Det er farligt at skrive {key} ind i string da folk kan give en key som er database down
