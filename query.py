@@ -12,20 +12,18 @@ app = FastAPI()
 #     return result
 
 @app.get("/")
-def read_user_me(table_name: str | None = None, num_obs: int | None = None):
+def read_user_me(table_name: str | None = None, num_obs: int | None = None, source: str | None = None):
 
-    if table_name == "temp_dry":
-        table_name = "temp_dry"
-    elif table_name == "humidity":
-        table_name = "humidity"
-    elif table_name == "pressure":
-        table_name = "pressure"
-    else:
+    if table_name not in ("temp_dry", "humidity", "pressure"):
         return "Choose tablename and number of observations. Example: http://127.0.0.1:8000/?table_name=humidity&num_obs=1"
-    if num_obs is None:
+
+    if num_obs is None or num_obs < 1:
         return "Choose tablename and number of observations. Example: http://127.0.0.1:8000/?table_name=humidity&num_obs=1"
-    
-    result = return_local_DB(table_name, num_obs) 
+
+    if source not in ("dmi", "specialisterne"):
+        return "Choose tablename and number of observations. Example: http://127.0.0.1:8000/?table_name=humidity&num_obs=1"
+
+    result = return_local_DB(table_name, num_obs) #sæt source på
 
     return result
 

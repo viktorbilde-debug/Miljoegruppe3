@@ -1,0 +1,277 @@
+import requests
+import psycopg
+
+### datetime; is the start and end dates with timezone
+### in this format: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+### limit; set number of observation up to 300.000
+### offset; makes observations start from that number, needs to be less than total observations left in dataset
+### bbox; is area measured, standard set to Denmark
+def extract_from_dmi(datetime:str, limit:int, offset:int, bbox:str = "7,54,16,58"):
+    url = "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items"
+    dmi_parameters = {
+        "datetime": datetime,
+        "limit": limit,
+        "offset": offset,
+        "bbox": bbox
+    }
+
+    response = requests.get(url, params=dmi_parameters)
+    if not response.ok:  ### Returns false if response error is 400+
+        return "Failed API response"
+    extracted_data = response.json()
+    return extracted_data
+
+
+#tilføj tjek for om indhentet data er korrekt
+def transform(extracted_data):
+    if extracted_data == {}:
+        return "This is an empty dictionary"
+
+    if extracted_data == "Failed API response":
+        return "Failed API response"
+
+    if "features" not in extracted_data.keys():
+        return "Called data from wrong API, try looking at \n https://www.dmi.dk/friedata/dokumentation/meteorological-observation-api"
+    data = extracted_data['features'] ### Det er lidt underligt at ændre navnet her, skal vi gøre det i toppen eller lade helt være?
+    transformed_data = {}
+
+    for i in data:
+        data_in=i["properties"]
+        parameter_id = data_in['parameterId']
+        station_id = data_in['stationId']
+        date_and_time =data_in['observed']
+        value =data_in['value']
+
+        ### skal vi tjekke med is none eller en tom string? eller noget andet?
+        if not parameter_id or not station_id or not date_and_time or (not value and value != 0):
+            return "BITCHES"
+
+        if parameter_id not in transformed_data.keys():
+            transformed_data[parameter_id] = []
+            transformed_data[parameter_id].append([station_id, date_and_time, value])
+        else:
+            transformed_data[parameter_id].append([station_id, date_and_time, value])
+
+    return transformed_data
+
+
+url = "https://herodot.spac.dk/api/v1/observations"
+
+headers = {
+    "Authorization": "Bearer 3e150494-280d-425d-ac28-c5dcf41c29ba:_-hVIiGyvYla_0SjAhTKX1LDn3UgdhWZ5gnozv31zMU"
+}
+
+response = requests.get(url, headers=headers)
+
+extracted_data_specialisterne  = response.json()
+
+def transform_specialisterne(extracted_data_specialisterne):
+    if extracted_data_specialisterne == {}:
+        return "This is an empty dictionary"
+
+    if extracted_data_specialisterne == "Failed API response":
+        return "Failed API response"
+
+    if "observations" not in extracted_data_specialisterne.keys():
+        #Lav bedre fejlmeddelse/er det overhovedet et realistisk scenarie
+        return "Noget er gået galt, ups "
+    
+    observationer = extracted_data_specialisterne["observations"]
+
+    transformed_data_specialisterne = {}
+
+    for i in observationer:
+            source = "Specialisterne"
+            parameter_id = i['sensor']
+            instrument_model= i['instrumentModel']
+            location_id = i['nodeId']
+            date_and_time =i['timestamp']
+            value =i['value']
+
+            if not location_id or not date_and_time or not (parameter_id or instrument_model) or (not value and value != 0):
+                #Skal vi gøre noget med de ugyldige målinger?/logge dem et sted?
+                continue
+
+            if not parameter_id and (instrument_model == 'DS18B20'):
+                            parameter_id = 'temperature'
+            elif not parameter_id:
+                continue
+
+            if parameter_id not in transformed_data_specialisterne.keys():
+                transformed_data_specialisterne[parameter_id] = []
+                transformed_data_specialisterne[parameter_id].append([source, location_id, date_and_time, value])
+            else:
+                transformed_data_specialisterne[parameter_id].append([source, location_id, date_and_time, value])
+
+    return transformed_data_specialisterne
+
+print(transform_specialisterne(extracted_data_specialisterne))    
+    
+
+
+
+    
+
+#nodeID
+#sensor
+#value
+#timestamp
+
+print(transform_specialisterne(extracted_data_specialisterne))
+
+
+# temp_datetime = "2018-02-12T01:00:00Z/2018-02-12T01:00:00Z"
+# print(transform(extract_from_dmi(temp_datetime,400000,0)))
+
+# print(transform(extract_from_dmi(temp_datetime,2,0 )))
+# print(list(transform(extract_from_dmi()).keys()))
+
+def open_connection():
+    conn = psycopg.connect(
+        "postgresql://app:test@db:5432/data_db"
+    )
+    return conn
+
+def close_connection(cursor,conn):
+    cursor.close()
+    conn.close()
+
+
+def load_humidity(transformed_data):
+    conn = open_connection()
+    cursor = conn.cursor()
+    data = transformed_data['humidity']
+    insert_query = """
+                   INSERT INTO humidity(station_id, observed_time, percent_humidity)
+                   VALUES(%s, %s, %s);
+                   """
+
+    cursor.executemany(insert_query,data)
+    conn.commit()
+    close_connection(cursor,conn)
+    return
+
+
+#
+def load_temp_dry(transformed_data):
+    conn = open_connection()
+    cursor = conn.cursor()
+    data = transformed_data['temp_dry']
+    insert_query = """
+                   INSERT INTO temp_dry(station_id, observed_time, temperature)
+                   VALUES (%s, %s, %s);
+                   """
+
+    cursor.executemany(insert_query, data)
+    conn.commit()
+    close_connection(cursor, conn)
+    return
+
+def load_pressure(transformed_data):
+    conn = open_connection()
+    cursor = conn.cursor()
+    data = transformed_data['pressure']
+    insert_query = """
+                   INSERT INTO pressure(station_id, observed_time, mbar)
+                   VALUES (%s, %s, %s);
+                   """
+
+    cursor.executemany(insert_query, data)
+    conn.commit()
+    close_connection(cursor, conn)
+    return
+
+def open_connection_local_DB():
+    conn = psycopg.connect(
+        "postgresql://app:test@localhost:5432/data_db"
+    )
+    return conn
+
+def return_local_DB(table_name: str,num_obs:int):
+    if table_name not in ["humidity", "temp_dry", "pressure"]:
+        return "Not valid table name"
+    if num_obs<0:
+        return "Not valid number of observations"
+    conn = open_connection_local_DB()
+    cursor = conn.cursor()
+    return_query = f"""
+                   SELECT * 
+                   FROM {table_name}
+                   LIMIT {num_obs}
+                   """
+    cursor.execute(return_query)
+    result = cursor.fetchall()
+    close_connection(cursor,conn)
+    return result
+"""
+#def extract_from_specialisterne():
+    url = "https://herodot.spac.dk/observations/list"
+
+    response = requests.get(url,auth=('viktor.bilde@specialisterne.dk', ''))
+    if not response.ok:  ### Returns false if response error is 400+
+        return "Failed API response"
+    extracted_data = response.json()
+    return extracted_data
+print(extract_from_specialisterne())
+"""
+
+
+# url = "https://herodot.spac.dk/api/v1/observations"
+
+# headers = {
+#     "Authorization": "Bearer 3e150494-280d-425d-ac28-c5dcf41c29ba:_-hVIiGyvYla_0SjAhTKX1LDn3UgdhWZ5gnozv31zMU"
+# }
+
+# response = requests.get(url, headers=headers)
+
+# print(response.json())
+
+
+
+#### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
+### Det er farligt at skrive {key} ind i string da folk kan give en key som er database down
+### Tag nogle enkelt og hardcode det
+### Denne function tager alle forskellige keys og sætter data ind hvis tabellen existere
+# def load(transformed_data):
+#     keys_list = list(transformed_data.keys())
+#     for key in keys_list:
+#         for i in range(len(transformed_data[key])):
+#             station_id = transformed_data[key][i][0]
+#             date_and_time = transformed_data[key][i][1]
+#             value = transformed_data[key][i][2]
+#             cursor.execute(
+#             f"INSERT INTO {key}(station_id, date_time, value_d) VALUES(%s, %s, %s)",
+#             (station_id, date_and_time, value)
+#             )
+#     return
+
+
+
+#### NOT IN USE RIGHT NOW (DONT LOOK RASMUS)
+#### TRANFORMS DATA INTO DICT IN DICT IN DICT
+# def transform(extracted_data):
+#     data = extract_from_dmi()
+#     outer_dict = {}
+#
+#     for i in range(len(data['features'])):
+#         date_and_time = data['features'][i]['properties']['observed'][:-1]
+#         first_dict_layer = data['features'][i]['properties']['parameterId']
+#         second_dict_layer = data['features'][i]['properties']['stationId']
+#         if data['features'][i]['properties']['parameterId'] not in outer_dict.keys():
+#             first_dict_layer = data['features'][i]['properties']['parameterId']
+#             outer_dict[first_dict_layer] = {}
+#             if data['features'][i]['properties']['stationId'] not in outer_dict[first_dict_layer].keys():
+#                 second_dict_layer = data['features'][i]['properties']['stationId']
+#                 outer_dict[first_dict_layer][second_dict_layer] = {}
+#                 outer_dict[first_dict_layer][second_dict_layer][date_and_time] = data['features'][i]['properties'][
+#                     'value']
+#             else:
+#                 outer_dict[first_dict_layer][second_dict_layer][date_and_time] = data['features'][i]['properties'][
+#                     'value']
+#         elif data['features'][i]['properties']['stationId'] not in outer_dict[first_dict_layer].keys():
+#             second_dict_layer = data['features'][i]['properties']['stationId']
+#             outer_dict[first_dict_layer][second_dict_layer] = {}
+#             outer_dict[first_dict_layer][second_dict_layer][date_and_time] = data['features'][i]['properties']['value']
+#         else:
+#             outer_dict[first_dict_layer][second_dict_layer][date_and_time] = data['features'][i]['properties']['value']
+#     return outer_dict
