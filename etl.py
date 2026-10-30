@@ -20,6 +20,7 @@ def extract_from_dmi(datetime:str, limit:int, offset:int, bbox:str = "7,54,16,58
         return "Failed API response"
     extracted_data = response.json()
     return extracted_data
+print(extract_from_dmi("2018-02-12T01:00:00Z/2018-02-12T01:00:00Z", 1, 0))
 
 #tilføj tjek for om indhentet data er korrekt
 def transform(extracted_data):

@@ -28,20 +28,20 @@ class window(QDialog):
         self.button2.clicked.connect(self.extract_from_API_t)
  
  def extract_from_API_H(self):
-    response = requests.get("http://127.0.0.1:8000/humidity")
+    response = requests.get("http://127.0.0.1:8000/?table_name=humidity&num_obs=4&source=DMI")
     if not response.ok:  ### Returns false if response error is 400+
         return "Failed API response"
     extracted_data = response.json()
     print(f"humidity: {extracted_data}")
 
  def extract_from_API_t(self):
-    response = requests.get("http://127.0.0.1:8000/temp_dry")
+    response = requests.get("http://127.0.0.1:8000/?table_name=temp_dry&num_obs=4&source=DMI")
     if not response.ok:  ### Returns false if response error is 400+
         return "Failed API response"
     extracted_data = response.json()
     print(f"temp_dry: {extracted_data}")
  def extract_from_API_p(self):
-    response = requests.get("http://127.0.0.1:8000/pressure")
+    response = requests.get("http://127.0.0.1:8000/?table_name=pressure&num_obs=4&source=DMI")
     if not response.ok:  ### Returns false if response error is 400+
         return "Failed API response"
     extracted_data = response.json()
